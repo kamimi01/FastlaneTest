@@ -27,9 +27,8 @@ precondition(envArgs["TAG"] != nil)
 let tag = envArgs["TAG"]!
 print(tag)
 
+// FIXME: cd しているけどディレクトリが変わっていない。。。
 try safeShell("cd .. && git tag \(tag) && git push origin \(tag)")
-let result = try safeShell("git log --oneline")
-print(result)
 
 // 2. リリースノートを作成する
 let url = URL(string: "https://api.github.com/repos/kamimi01/FastlaneTest/releases")!
