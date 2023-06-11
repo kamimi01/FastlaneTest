@@ -1,0 +1,52 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  desc "TestFlightにアップロードする"
+  lane :testFlight do
+    # add actions here: https://docs.fastlane.tools/actions
+    puts "カスタムレーン"
+    puts "テストよ"
+    # ビルドしてIPAファイルを作成する
+    build_app(
+      scheme: "Release",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.kamimi.FastlaneTest" => "AppStore_com.kamimi.FastlaneTest.mobileprovision"
+        }
+      }
+    )
+    # slackにメッセージを投稿する
+    slack(
+      slack_url: "https://hooks.slack.com/services/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",
+      message: "テストメッセージ",
+      channel: "experimental-station",
+      payload: {
+        "Build Date" => Time.new.to_s,
+        "Build by" => "Jenkins"
+      }
+    )
+    # ビルドしてIPAファイルを作成する
+    # App Storeに上げる
+  end
+
+  # リリースを自動化する
+  lane :release do
+    system("swift hello.swift")
+  end
+end
