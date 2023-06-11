@@ -1,8 +1,5 @@
 import Foundation
 
-let locationName: String = "六本木"
-print("ようこそ" + locationName + "へ！")
-
 // - seealso: https://stackoverflow.com/a/50035059/18519539
 @discardableResult // Add to suppress warnings when you don't want/need a result
 func safeShell(_ command: String) throws -> String {
@@ -24,8 +21,11 @@ func safeShell(_ command: String) throws -> String {
 }
 
 // 1. タグを打つ
-try safeShell("cd ..")
-let result = try safeShell("ls")
+precondition(CommandLine.argc == 2)
+let tag = CommandLine.arguments[1]
+
+try safeShell("cd .. && git tag \(tag)")
+let result = try safeShell("git log --oneline")
 print(result)
 
 // 2. リリースノートを作成する
