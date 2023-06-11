@@ -33,7 +33,7 @@ platform :ios do
     )
     # slackにメッセージを投稿する
     slack(
-      slack_url: "https://hooks.slack.com/services/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",
+      slack_url: ENV["KAMIMI_SLACK_URL"],
       message: "テストメッセージ",
       channel: "experimental-station",
       payload: {

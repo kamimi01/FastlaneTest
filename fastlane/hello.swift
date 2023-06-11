@@ -24,6 +24,7 @@ func safeShell(_ command: String) throws -> String {
 }
 
 // 1. タグを打つ
+try safeShell("cd ..")
 let result = try safeShell("ls")
 print(result)
 
