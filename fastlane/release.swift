@@ -31,24 +31,52 @@ print(tag)
 try safeShell("cd .. && git tag \(tag) && git push origin \(tag)")
 
 // 2. リリースノートを作成する
-let url = URL(string: "https://api.github.com/repos/kamimi01/FastlaneTest/releases")!
-let headers = [
-    "Accept": "application/vnd.github+json",
-    "Authorization": "Bearer \(envArgs["GITHUB_TOKEN"]!)",
-    "X-GitHub-Api-Version": "2022-11-28"
-]
+enum HttpMethod: String {
+    case post = "POST"
+}
 
-let data: [String: Any] = [
-    "tag_name": tag, 
-    "name": tag,
-    "body": tag,
-    "prerelease": true
-]
-let httpBody = try! JSONSerialization.data(withJSONObject: data, options: [])
+protocol Request {
+    var baseURL: URL { get }
+    var method: HttpMethod { get }
+    var path: String { get }
+    var headerFields: [String: String]? { get }
+    var body: [String: Any]? { get }
+}
 
+protocol GitHubRequest: Request {}
+
+extension GitHubRequest {
+    var baseURL: URL {
+        return URL(string: "https://api.github.com")!
+    }
+
+    var headerFields: [String: String]? {
+        return [
+            "Accept": "application/vnd.github+json",
+            "Authorization": "Bearer \(envArgs["GITHUB_TOKEN"]!)",
+            "X-GitHub-Api-Version": "2022-11-28"
+        ]
+    }
+}
+
+struct GenerateReleaseNote: GitHubRequest {
+    var method: HttpMethod = .post
+    var path = "/repos/kamimi01/FastlaneTest/releases"
+    var body: [String: Any]? = [
+        "tag_name": tag, 
+        "name": tag,
+        "body": tag,
+        "prerelease": true
+    ]
+}
+
+let releaseNoteRequest = GenerateReleaseNote()
+let httpBody = try! JSONSerialization.data(withJSONObject: releaseNoteRequest.body, options: [])
+
+let url = releaseNoteRequest.baseURL.appendingPathComponent(releaseNoteRequest.path)
 var request = URLRequest(url: url)
-request.httpMethod = "POST"
-request.allHTTPHeaderFields = headers
+request.httpMethod = releaseNoteRequest.method.rawValue
+request.allHTTPHeaderFields = releaseNoteRequest.headerFields
 request.httpBody = httpBody
 
 do {
