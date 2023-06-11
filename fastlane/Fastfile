@@ -47,6 +47,6 @@ platform :ios do
 
   # リリースを自動化する
   lane :release do
-    system("swift release.swift")
+    system("KEY=#{ENV["TAG"]} swift release.swift")
   end
 end

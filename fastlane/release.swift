@@ -21,8 +21,11 @@ func safeShell(_ command: String) throws -> String {
 }
 
 // 1. タグを打つ
-precondition(CommandLine.argc == 2)
-let tag = CommandLine.arguments[1]
+let envArgs = ProcessInfo.processInfo.environment
+precondition(envArgs["TAG"] != nil)
+
+let tag = envArgs["TAG"]!
+print(tag)
 
 try safeShell("cd .. && git tag \(tag)")
 let result = try safeShell("git log --oneline")
