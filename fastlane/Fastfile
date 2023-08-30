@@ -99,4 +99,13 @@ platform :ios do
       }
     )
   end
+
+  lane :get_info_plist_info do
+    ipa_path = "/Users/mikaurakawa/Documents/SourceCode/FastlaneTest/fastlane/MeetupReminder.ipa"
+
+    version = get_ipa_info_plist_value(ipa: ipa_path, key: "CFBundleShortVersionString")
+    build_number = get_ipa_info_plist_value(ipa: ipa_path, key: "CFBundleVersion")
+    puts version
+    puts build_number
+  end
 end
