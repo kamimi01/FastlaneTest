@@ -13,11 +13,13 @@
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
 
+require "spaceship"
+
 default_platform(:ios)
 
 platform :ios do
   desc "TestFlightにアップロードする"
-  lane :testFlight do
+  lane :testFlightForMe do
     # add actions here: https://docs.fastlane.tools/actions
     puts "カスタムレーン"
     puts "テストよ"
@@ -48,5 +50,53 @@ platform :ios do
   # リリースを自動化する
   lane :release do
     system("swift release.swift")
+  end
+
+  lane :handleBetaTestDetail do
+    puts "テスト"
+    Spaceship::ConnectAPI::login(ENV["APPLE_USERNAME"], ENV["APPLE_PASSWORD"])
+    app = Spaceship::ConnectAPI::App.find(ENV["BUNDLE_ID"])
+    builds = Spaceship::ConnectAPI::Build.all(app_id: app.id)
+
+    filtered_builds = builds.select do |build|
+      build.app_version.start_with?("1.8")
+    end
+
+    puts filtered_builds
+
+    filtered_builds.select do |build|
+      puts "ビルドバージョン: #{build.app_version}"
+      puts "ビルド番号: #{build.version}"
+      puts "テストの詳細: #{build.build_beta_detail}"
+      puts build.build_beta_detail.detail
+
+      # ビルドのテストの詳細を取得
+      # find というメソッドはない
+      # test_details = Spaceship::ConnectAPI::BuildBetaDetail.find(build_id: build.id)
+      # puts test_details
+    end
+  end
+
+  lane :submit_for_review do
+    upload_to_app_store(
+      app_identifier: ENV["BUNDLE_ID"],
+      app_version: "1.9",
+      build_number: '1',
+      submit_for_review: true,
+      skip_metadata: false,
+      skip_screenshots: true,
+      skip_binary_upload: true,
+      release_notes: { 
+        default: "bug fix and improve performance" 
+      },
+      force: true,
+      submission_information: {
+        add_id_info_uses_idfa: true,
+        add_id_info_serves_ads: true,
+        add_id_info_tracks_install: true,
+        add_id_info_tracks_action: true,
+        add_id_info_limits_tracking: true
+      }
+    )
   end
 end
